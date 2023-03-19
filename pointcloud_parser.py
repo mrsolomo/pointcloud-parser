@@ -3,8 +3,8 @@ import time
 import numpy as np
 
 # Serial COM constants
-DATACOMPORT = 'COM23' # '/dev/tty.usbmodemfa141'
-CONFIGCOMPORT = 'COM22'
+DATACOMPORT = 'COM8' # '/dev/tty.usbmodemfa141'
+CONFIGCOMPORT = 'COM7'
 DATABAUD = 921600
 CONFIGBAUD = 115200
 CONFIGFILE = './ISK_6m_default.cfg'
@@ -19,19 +19,19 @@ PRESENCE_INDICATION = 1021
 # Initialize serial port
 def init_serial(com_port, baud_rate):
     print("Func: init_sys_serial")
-    serialh = 0
-    # try:
-    #     # serialh = serial.Serial(com_port, baud_rate, bytesize = 8, parity = serial.PARITY_NONE, stopbits = 1, timeout = 0.01)
-    #     # serialh.reset_input_buffer()
-    # except:
-    #     print("Failed to open serial port! ", com_port)
+    # serialh = 0
+    try:
+        serialh = serial.Serial(com_port, baud_rate, bytesize = 8, parity = serial.PARITY_NONE, stopbits = 1, timeout = 0.01)
+        serialh.reset_input_buffer()
+    except:
+        print("Failed to open serial port! ", com_port)
     return serialh
 
 
 # Close serial port
 def deinit_serial(serialh):
     print("Func: deinit_serial")
-    # serialh.close()
+    serialh.close()
 
 
 # Read config file and send it to CONFIGPORT
@@ -43,7 +43,7 @@ def send_config_data(serialh):
 
     print("Sending config data to config port...\n\n")
     for line in lines:
-        # serialh.write(line.encode())
+        serialh.write(line.encode())
         time.sleep(0.1)
         print(line)
 
@@ -73,13 +73,13 @@ def stream_data(serialh):
             targetObj = {}
             pointObj = {}
             
-            # readBuffer = serialh.read(serialh.in_waiting)
-            HEX_STRING = "0201040306050807" + "01020000" + "28000000" + "03040806" + "01000000" + "02000000" + "03000000" + "04000000" + "05000000" \
-                        + "FC030000" + "44000000" + "CDCCCC3D" + "CDCCCC3D" + "CDCCCC3D" + "CDCCCC3D" + "CDCCCC3D" \
-                        + "0A" + "32" + "0F00" + "0E00" + "0D00"
+            readBuffer = serialh.read(serialh.in_waiting)
+            # HEX_STRING = "0201040306050807" + "01020000" + "28000000" + "03040806" + "01000000" + "02000000" + "03000000" + "04000000" + "05000000" \
+            #             + "FC030000" + "44000000" + "CDCCCC3D" + "CDCCCC3D" + "CDCCCC3D" + "CDCCCC3D" + "CDCCCC3D" \
+            #             + "0A" + "32" + "0F00" + "0E00" + "0D00"
                         
             # size is 8 bytes header, 20 bytes unit, 8 bytes per point (5 points) 
-            readBuffer = bytearray.fromhex(HEX_STRING)
+            # readBuffer = bytearray.fromhex(HEX_STRING)
             byteVec = np.frombuffer(readBuffer, dtype = 'uint8')
             byteCount = len(byteVec)
             
@@ -283,7 +283,7 @@ if __name__ == "__main__":
     deinit_serial(serialh)
 
     # Stream point cloud data
-    serialh = init_serial(CONFIGCOMPORT, CONFIGBAUD)
+    serialh = init_serial(DATACOMPORT, DATABAUD)
     stream_data(serialh) # enters infinite loop that can be quit by keyboard interrupt
     deinit_serial(serialh)
     
