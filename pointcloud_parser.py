@@ -294,10 +294,6 @@ def stream_data(serialh):
             print("\nFrame Period: ", (end-start)*1000)   
 
 
-def thread_stream_data(dataserialh, cfgserialh):
-    stream_data(dataserialh) # enters infinite loop that can be quit by keyboard interrupt
-
-
 def exit_program():
     print("\n\nKEYBOARD INTERRUPT RECEIVED.\n\n")
     
@@ -331,16 +327,8 @@ if __name__ == "__main__":
     # Stream point cloud data
     dataserialh = init_serial(DATACOMPORT, DATABAUD)
 
-    # Create threads
-    thread1 = Thread(target=thread_stream_data,args=(dataserialh,cfgserialh))
-    thread1.daemon = True
-    thread1.start()
-
     try:
-        while thread1.is_alive():
-            print("Waiting for background thread to finish")
-            time.sleep(1)
-        print("Thread finished task, exiting")
+        stream_data(dataserialh)
     except KeyboardInterrupt:
         print("Closing main-thread.This will also close the background thread because is set as daemon.")
         exit_program()
